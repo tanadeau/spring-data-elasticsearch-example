@@ -13,12 +13,9 @@ val counter = AtomicInteger(0)
 @RestController
 @RequestMapping("/post")
 class PostController(val postService: PostService) {
-
-
     @GetMapping
-    fun getById(): ResponseEntity<Iterable<Post>> {
-        val found = postService.findAll()
-        return ResponseEntity.ok(found)
+    fun getAll(): List<Post> {
+        return postService.findAll().toList()
     }
 
     @GetMapping("/{id}")
@@ -30,7 +27,10 @@ class PostController(val postService: PostService) {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create() {
-        val newPost = Post(null, listOf(Tag("tag1", "value${counter.andIncrement}"), Tag("tag2", "value${counter.andIncrement}")))
+        val newPost = Post(
+                null,
+                listOf(Tag("tag1", "value${counter.andIncrement}"), Tag("tag2", "value${counter.andIncrement}")))
+
         postService.save(newPost)
     }
 }

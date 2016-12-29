@@ -1,7 +1,7 @@
 elastic:
   # Set local to true to use embedded Elasticsearch (for quick testing)
   local: false
-  cluster: bsp
+  cluster: elasticsearch
   hosts: localhost
 
 clientSpec:
