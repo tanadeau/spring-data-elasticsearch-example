@@ -3,3 +3,14 @@ elastic:
   local: false
   cluster: bsp
   hosts: localhost
+
+clientSpec:
+  client:
+    clientId: 167341352889007353f9
+    clientSecret: 3d590dacff262e388ca21cb132face18451745b0
+    accessTokenUri: https://github.com/login/oauth/access_token
+    userAuthorizationUri: https://github.com/login/oauth/authorize
+    clientAuthenticationScheme: form
+  resource:
+    userInfoUri: https://api.github.com/user
+  providerId: 'github'

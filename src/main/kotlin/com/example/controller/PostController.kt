@@ -6,10 +6,21 @@ import com.example.service.PostService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.util.concurrent.atomic.AtomicInteger
+
+val counter = AtomicInteger(0)
 
 @RestController
 @RequestMapping("/post")
 class PostController(val postService: PostService) {
+
+
+    @GetMapping
+    fun getById(): ResponseEntity<Iterable<Post>> {
+        val found = postService.findAll()
+        return ResponseEntity.ok(found)
+    }
+
     @GetMapping("/{id}")
     fun getById(@PathVariable id: String): ResponseEntity<Post> {
         val found = postService.findOne(id)
@@ -19,7 +30,7 @@ class PostController(val postService: PostService) {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create() {
-        val newPost = Post("testId", listOf(Tag("tag1", "value1"), Tag("tag2", "value2")))
+        val newPost = Post(null, listOf(Tag("tag1", "value${counter.andIncrement}"), Tag("tag2", "value${counter.andIncrement}")))
         postService.save(newPost)
     }
 }
