@@ -5,7 +5,6 @@ import java.security.KeyFactory
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.X509EncodedKeySpec
 
-
 /**
  * Decode a Public Key from a PEM string
  *
@@ -18,8 +17,7 @@ import java.security.spec.X509EncodedKeySpec
  * *
  * @throws Exception
  */
-fun decodePublicKey(pem: String): RSAPublicKey = decodePublicKey(pemToDer(pem))
-
+fun decodePublicKey(pem: String) = decodePublicKey(pemToDer(pem))
 
 private fun decodePublicKey(der: ByteArray): RSAPublicKey {
     val spec = X509EncodedKeySpec(der)
@@ -27,8 +25,7 @@ private fun decodePublicKey(der: ByteArray): RSAPublicKey {
     return kf.generatePublic(spec) as RSAPublicKey
 }
 
-private fun pemToDer(pem: String): ByteArray = Base64.decodeBase64(removeBeginEnd(pem))
-
+private fun pemToDer(pem: String) = Base64.decodeBase64(removeBeginEnd(pem))
 
 private fun removeBeginEnd(pem: String): String = pem.replace("-----BEGIN (.*)-----".toRegex(), "")
             .replace("-----END (.*)----".toRegex(), "")

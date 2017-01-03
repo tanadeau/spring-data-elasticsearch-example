@@ -105,7 +105,6 @@ internal class ElasticsearchEntityMapper(val objectMapper: ObjectMapper) : Entit
     }
 }
 
-
 @Configuration
 @EnableResourceServer
 @EnableWebSecurity
