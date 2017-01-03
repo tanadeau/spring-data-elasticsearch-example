@@ -5,12 +5,8 @@ elastic:
   hosts: localhost
 
 clientSpec:
-  client:
-    clientId: 167341352889007353f9
-    clientSecret: 3d590dacff262e388ca21cb132face18451745b0
-    accessTokenUri: https://github.com/login/oauth/access_token
-    userAuthorizationUri: https://github.com/login/oauth/authorize
-    clientAuthenticationScheme: form
   resource:
     userInfoUri: https://api.github.com/user
+#    jwt:
+#      keyValue: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjCsMlRZ7vfFR5iQhyWUId7uj2Q3xV9kDkJbWEj2jfrrXCHGfTZNxObZ25nL5kFw7posmhVWY+bE5VZQ4953kK8qxnrN99vmEg7Waq2gkbz6+dibajBmxbI6bQPkStz6VgiEFS9vV1SBFxbQpkG3NMfhxYg1bB/HecoX2J4Pczylx+5jFTuBZZRw+cMCqRRmYSvQnKY5Go1W8DCo+747rHtkBJaApe3TIrYzgjP8rl7R2a1puLwJQ7AmMCOzB3E3E9ZklELzqPApDT+2IrEka2seQSUIqeNHt0B5P4Th5W40z7hHxy2et/1vOpCzS1u2P30tbKCe8/lsn9Obu9A56cQIDAQAB
   providerId: 'github'
