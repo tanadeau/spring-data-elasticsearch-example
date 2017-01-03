@@ -10,10 +10,8 @@ import org.elasticsearch.cluster.ClusterName
 import org.elasticsearch.common.settings.Settings.settingsBuilder
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import org.elasticsearch.node.NodeBuilder.nodeBuilder
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties
-import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.NestedConfigurationProperty
 import org.springframework.context.annotation.Bean
@@ -23,22 +21,23 @@ import org.springframework.data.elasticsearch.core.EntityMapper
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
-import org.springframework.security.oauth2.client.OAuth2ClientContext
-import org.springframework.security.oauth2.client.OAuth2RestTemplate
-import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.jwt.crypto.sign.RsaVerifier
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter
+import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices
+import org.springframework.security.oauth2.provider.token.TokenStore
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore
 import java.io.IOException
 import java.net.InetAddress
-import javax.servlet.Filter
 
 @Configuration
 class JacksonConfig {
     @Bean
-    open fun objectMapperBuilder() = Jackson2ObjectMapperBuilder().modulesToInstall(KotlinModule())
+    fun objectMapperBuilder(): Jackson2ObjectMapperBuilder = Jackson2ObjectMapperBuilder().modulesToInstall(KotlinModule())
 }
 
 @Configuration
@@ -108,14 +107,15 @@ internal class ElasticsearchEntityMapper(val objectMapper: ObjectMapper) : Entit
 
 
 @Configuration
-@EnableOAuth2Client
-class OAuthConfig : WebSecurityConfigurerAdapter(false) {
+@EnableResourceServer
+@EnableWebSecurity
+class OAuth2ResourceConfig : ResourceServerConfigurerAdapter() {
     companion object : KLogging()
 
-    @Suppress("SpringKotlinAutowiring")
-    @Autowired
-    var oauth2ClientContext: OAuth2ClientContext? = null
-
+    override fun configure(config: ResourceServerSecurityConfigurer) {
+        config.tokenServices(tokenServices())
+        config.resourceId(null)
+    }
 
     @Bean
     @ConfigurationProperties("clientSpec")
@@ -123,46 +123,42 @@ class OAuthConfig : WebSecurityConfigurerAdapter(false) {
         return ClientResources()
     }
 
-    private fun ssoFilter(): Filter {
-        val cs = clientSpec()
-        val filter = OAuth2ClientAuthenticationProcessingFilter(
-                "/login/${cs.providerId}")
-        val oAuth2RestTemplate = OAuth2RestTemplate(cs.client, oauth2ClientContext)
-        filter.setRestTemplate(oAuth2RestTemplate)
-        filter.setTokenServices(
-                UserInfoTokenServices(cs.resource.userInfoUri, cs.client.clientId))
-
-        // example of doing something when the authentication was successful
-        filter.setAuthenticationSuccessHandler { httpServletRequest, httpServletResponse, authentication ->
-            logger.info { "Logged Name = ${authentication.name}" }
-        }
-        return filter
+    @Bean
+    fun tokenStore(): TokenStore {
+        return JwtTokenStore(accessTokenConverter())
     }
 
-    @Throws(Exception::class)
+    @Bean
+    fun accessTokenConverter(): JwtAccessTokenConverter {
+        val converter = JwtAccessTokenConverter()
+        if (clientSpec().resource.jwt?.keyValue == null) {
+            // This is in here until you want to just use a constant keycloak server and its public key
+            // Should remove this, once that happens
+            logger.warn { "Skipping verifier of oauth server" }
+            converter.setVerifier(NoOpVerifier())
+        } else {
+            converter.setVerifier(RsaVerifier(decodePublicKey(clientSpec().resource.jwt.keyValue)))
+        }
+        return converter
+    }
+
+    @Bean
+    fun tokenServices(): DefaultTokenServices {
+        val defaultTokenServices = DefaultTokenServices()
+        defaultTokenServices.setTokenStore(tokenStore())
+        return defaultTokenServices
+    }
+
     override fun configure(http: HttpSecurity) {
-        // @formatter:off
-        http
-                // XXX ** didn't seem to stop the cookie -- .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .antMatcher("/**").authorizeRequests()
-                .antMatchers("/", "/login**", "/webjars/**").permitAll().anyRequest().authenticated().and()
-                .exceptionHandling()
-                    .authenticationEntryPoint(LoginUrlAuthenticationEntryPoint("/login/github")).and()
-                .logout()
-                .logoutSuccessUrl("/").permitAll().and()
-                .csrf().disable()
-                .addFilterBefore(ssoFilter(), BasicAuthenticationFilter::class.java)
-        // @formatter:on
+        http.csrf().disable()
+        http.authorizeRequests().anyRequest().authenticated()
     }
 }
 
 class ClientResources {
-
     @NestedConfigurationProperty
     val client = AuthorizationCodeResourceDetails()
 
     @NestedConfigurationProperty
     val resource = ResourceServerProperties()
-
-    var providerId: String = ""
 }
