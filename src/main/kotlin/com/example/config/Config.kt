@@ -37,7 +37,7 @@ import java.net.InetAddress
 @Configuration
 class JacksonConfig {
     @Bean
-    fun objectMapperBuilder(): Jackson2ObjectMapperBuilder = Jackson2ObjectMapperBuilder().modulesToInstall(KotlinModule())
+    fun objectMapperBuilder() = Jackson2ObjectMapperBuilder().modulesToInstall(KotlinModule())
 }
 
 @Configuration
