@@ -11,26 +11,12 @@ import org.elasticsearch.common.settings.Settings.settingsBuilder
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import org.elasticsearch.node.NodeBuilder.nodeBuilder
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties
-import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.boot.context.properties.NestedConfigurationProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate
 import org.springframework.data.elasticsearch.core.EntityMapper
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
-import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.jwt.crypto.sign.RsaVerifier
-import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer
-import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter
-import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices
-import org.springframework.security.oauth2.provider.token.TokenStore
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter
-import org.springframework.security.oauth2.provider.token.store.JwtTokenStore
 import java.io.IOException
 import java.net.InetAddress
 
@@ -103,61 +89,4 @@ internal class ElasticsearchEntityMapper(val objectMapper: ObjectMapper) : Entit
     override fun mapToString(`object`: Any?): String {
         return objectMapper.writeValueAsString(`object`)
     }
-}
-
-@Configuration
-@EnableResourceServer
-@EnableWebSecurity
-class OAuth2ResourceConfig : ResourceServerConfigurerAdapter() {
-    companion object : KLogging()
-
-    override fun configure(config: ResourceServerSecurityConfigurer) {
-        config.tokenServices(tokenServices())
-        config.resourceId(null)
-    }
-
-    @Bean
-    @ConfigurationProperties("clientSpec")
-    fun clientSpec(): ClientResources {
-        return ClientResources()
-    }
-
-    @Bean
-    fun tokenStore(): TokenStore {
-        return JwtTokenStore(accessTokenConverter())
-    }
-
-    @Bean
-    fun accessTokenConverter(): JwtAccessTokenConverter {
-        val converter = JwtAccessTokenConverter()
-        if (clientSpec().resource.jwt?.keyValue == null) {
-            // This is in here until you want to just use a constant keycloak server and its public key
-            // Should remove this, once that happens
-            logger.warn { "Skipping verifier of oauth server" }
-            converter.setVerifier(NoOpVerifier())
-        } else {
-            converter.setVerifier(RsaVerifier(decodePublicKey(clientSpec().resource.jwt.keyValue)))
-        }
-        return converter
-    }
-
-    @Bean
-    fun tokenServices(): DefaultTokenServices {
-        val defaultTokenServices = DefaultTokenServices()
-        defaultTokenServices.setTokenStore(tokenStore())
-        return defaultTokenServices
-    }
-
-    override fun configure(http: HttpSecurity) {
-        http.csrf().disable()
-        http.authorizeRequests().anyRequest().authenticated()
-    }
-}
-
-class ClientResources {
-    @NestedConfigurationProperty
-    val client = AuthorizationCodeResourceDetails()
-
-    @NestedConfigurationProperty
-    val resource = ResourceServerProperties()
 }
