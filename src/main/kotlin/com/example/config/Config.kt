@@ -17,6 +17,13 @@ import org.springframework.data.elasticsearch.core.ElasticsearchTemplate
 import org.springframework.data.elasticsearch.core.EntityMapper
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
+import springfox.documentation.builders.ApiInfoBuilder
+import springfox.documentation.builders.PathSelectors
+import springfox.documentation.builders.RequestHandlerSelectors
+import springfox.documentation.service.ApiInfo
+import springfox.documentation.spi.DocumentationType
+import springfox.documentation.spring.web.plugins.Docket
+import springfox.documentation.swagger2.annotations.EnableSwagger2
 import java.io.IOException
 import java.net.InetAddress
 
@@ -24,6 +31,28 @@ import java.net.InetAddress
 class JacksonConfig {
     @Bean
     fun objectMapperBuilder() = Jackson2ObjectMapperBuilder().modulesToInstall(KotlinModule())
+}
+
+@Configuration
+@EnableSwagger2
+class SwaggerConfig {
+    @Bean
+    fun api(): Docket {
+        return Docket(DocumentationType.SWAGGER_2)
+                .select()
+                .apis(RequestHandlerSelectors.any())
+                .paths(PathSelectors.any())
+                .build()
+                .apiInfo(apiInfo())
+    }
+
+    private fun apiInfo(): ApiInfo {
+        return ApiInfoBuilder()
+                .title("Test API")
+                .description("API docs for Test API")
+                .version("0.0.1")
+                .build()
+    }
 }
 
 @Configuration
