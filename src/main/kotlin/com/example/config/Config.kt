@@ -153,11 +153,13 @@ class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
         super.configure(http)
+
         http
                 .authorizeRequests()
                 .antMatchers("/post*").authenticated()
                 .antMatchers("/admin*").authenticated()
-                .anyRequest().permitAll()
+                .anyRequest().permitAll().and()
+                .csrf().disable()
     }
 
     @Bean
