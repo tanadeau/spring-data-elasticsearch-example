@@ -16,10 +16,13 @@ import org.keycloak.adapters.KeycloakDeploymentBuilder
 import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter
 import org.keycloak.representations.adapters.config.AdapterConfig
-import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.ComponentScan
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate
 import org.springframework.data.elasticsearch.core.EntityMapper
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
@@ -39,20 +42,12 @@ import springfox.documentation.spring.web.plugins.Docket
 import springfox.documentation.swagger2.annotations.EnableSwagger2
 import java.io.IOException
 import java.net.InetAddress
-import org.springframework.web.context.WebApplicationContext
-import org.keycloak.representations.AccessToken
-import org.elasticsearch.client.Requests.getRequest
-import org.springframework.web.context.request.ServletRequestAttributes
-import org.springframework.web.context.request.RequestContextHolder.currentRequestAttributes
-import org.springframework.web.context.request.RequestContextHolder
-import org.keycloak.KeycloakPrincipal
-import org.springframework.context.annotation.*
 
 
 @Configuration
 class JacksonConfig {
     @Bean
-    fun objectMapperBuilder() = Jackson2ObjectMapperBuilder().modulesToInstall(KotlinModule())
+    fun objectMapperBuilder() = Jackson2ObjectMapperBuilder().modulesToInstall(KotlinModule())!!
 }
 
 @Configuration
@@ -137,6 +132,10 @@ class ESConfig {
 @EnableWebSecurity
 @ComponentScan(basePackageClasses = arrayOf(KeycloakSecurityComponents::class))
 class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
+    private val kcDeployment: KeycloakDeployment by lazy {
+        KeycloakDeploymentBuilder.build(keycloakAdapterConfig())!!
+    }
+
     /**
      * Registers the KeycloakAuthenticationProvider with the authentication manager.
      */
@@ -167,9 +166,6 @@ class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
         return AdapterConfig()
     }
 
-    val kcDeployment: KeycloakDeployment by lazy {
-        KeycloakDeploymentBuilder.build(keycloakAdapterConfig())!!
-    }
     @Bean
     fun configResolver() = KeycloakConfigResolver { kcDeployment }
 }
