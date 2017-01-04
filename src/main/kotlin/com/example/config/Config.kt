@@ -13,10 +13,12 @@ import org.elasticsearch.node.NodeBuilder.nodeBuilder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate
 import org.springframework.data.elasticsearch.core.EntityMapper
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
+import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.PathSelectors
 import springfox.documentation.builders.RequestHandlerSelectors
@@ -34,6 +36,7 @@ class JacksonConfig {
 }
 
 @Configuration
+@Import(BeanValidatorPluginsConfiguration::class)
 @EnableSwagger2
 class SwaggerConfig {
     @Bean
