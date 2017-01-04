@@ -3,13 +3,10 @@ package com.example.controller
 import com.example.model.Post
 import com.example.service.PostService
 import mu.KLogging
-import org.keycloak.KeycloakPrincipal
-import org.keycloak.adapters.RefreshableKeycloakSecurityContext
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-
 
 @RestController
 @RequestMapping("/post")

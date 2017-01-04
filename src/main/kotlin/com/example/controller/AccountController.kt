@@ -14,11 +14,12 @@ class AccountController {
     @GetMapping("/whoami", produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE))
     @ResponseBody
     fun getUserInformation(principal: KeycloakPrincipal<RefreshableKeycloakSecurityContext>): Map<String, String> {
-        val token = principal.keycloakSecurityContext.getToken()
+        val token = principal.keycloakSecurityContext.token
 
-        val id = token.getId()
-        val firstName = token.getGivenName()
-        val lastName = token.getFamilyName()
-        return mapOf("id" to id, "firstName" to firstName, "lastName" to lastName, "username" to token.preferredUsername )
+        return mapOf(
+                "id" to token.id,
+                "firstName" to token.givenName,
+                "lastName" to token.familyName,
+                "username" to token.preferredUsername)
     }
 }
