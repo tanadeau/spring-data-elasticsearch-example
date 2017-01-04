@@ -47,8 +47,7 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
     compile 'org.springframework.boot:spring-boot-starter-web'
 
-    compile 'org.keycloak:keycloak-tomcat8-adapter:2.4.0.Final'
-    compile 'org.keycloak:keycloak-spring-boot-adapter:2.4.0.Final'
+    compile 'org.keycloak:keycloak-spring-security-adapter:2.4.0.Final'
 
     compile 'com.google.guava:guava:20.0'
     compile "com.fasterxml.jackson.core:jackson-core"

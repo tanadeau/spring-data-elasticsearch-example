@@ -10,14 +10,25 @@ import org.elasticsearch.cluster.ClusterName
 import org.elasticsearch.common.settings.Settings.settingsBuilder
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import org.elasticsearch.node.NodeBuilder.nodeBuilder
+import org.keycloak.adapters.KeycloakConfigResolver
+import org.keycloak.adapters.KeycloakDeployment
+import org.keycloak.adapters.KeycloakDeploymentBuilder
+import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents
+import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter
+import org.keycloak.representations.adapters.config.AdapterConfig
+import org.springframework.beans.factory.BeanFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate
 import org.springframework.data.elasticsearch.core.EntityMapper
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.PathSelectors
@@ -28,6 +39,15 @@ import springfox.documentation.spring.web.plugins.Docket
 import springfox.documentation.swagger2.annotations.EnableSwagger2
 import java.io.IOException
 import java.net.InetAddress
+import org.springframework.web.context.WebApplicationContext
+import org.keycloak.representations.AccessToken
+import org.elasticsearch.client.Requests.getRequest
+import org.springframework.web.context.request.ServletRequestAttributes
+import org.springframework.web.context.request.RequestContextHolder.currentRequestAttributes
+import org.springframework.web.context.request.RequestContextHolder
+import org.keycloak.KeycloakPrincipal
+import org.springframework.context.annotation.*
+
 
 @Configuration
 class JacksonConfig {
@@ -111,6 +131,47 @@ class ESConfig {
 
     @Bean
     fun elasticsearchTemplate(client: Client, mapper: EntityMapper) = ElasticsearchTemplate(client, mapper)
+}
+
+@Configuration
+@EnableWebSecurity
+@ComponentScan(basePackageClasses = arrayOf(KeycloakSecurityComponents::class))
+class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
+    /**
+     * Registers the KeycloakAuthenticationProvider with the authentication manager.
+     */
+    @Autowired
+    @Throws(Exception::class)
+    fun configureGlobal(auth: AuthenticationManagerBuilder) {
+        auth.authenticationProvider(keycloakAuthenticationProvider())
+    }
+
+    @Bean
+    override fun sessionAuthenticationStrategy(): SessionAuthenticationStrategy {
+        return NullAuthenticatedSessionStrategy()
+    }
+
+    @Throws(Exception::class)
+    override fun configure(http: HttpSecurity) {
+        super.configure(http)
+        http
+                .authorizeRequests()
+                .antMatchers("/post*").authenticated()
+                .antMatchers("/admin*").authenticated()
+                .anyRequest().permitAll()
+    }
+
+    @Bean
+    @ConfigurationProperties("keycloak")
+    fun keycloakAdapterConfig(): AdapterConfig {
+        return AdapterConfig()
+    }
+
+    val kcDeployment: KeycloakDeployment by lazy {
+        KeycloakDeploymentBuilder.build(keycloakAdapterConfig())!!
+    }
+    @Bean
+    fun configResolver() = KeycloakConfigResolver { kcDeployment }
 }
 
 internal class ElasticsearchEntityMapper(val objectMapper: ObjectMapper) : EntityMapper {

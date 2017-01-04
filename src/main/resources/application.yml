@@ -12,12 +12,3 @@ keycloak:
   credentials:
     secret: xxxx
   use-resource-role-mappings: false
-  bearer-only: true
-  securityConstraints:
-    - securityCollections:
-      - name: spring secured api
-        authRoles:
-          - FULL_ACCESS
-        patterns:
-          - '/post/*'
-          - '/account/*'
