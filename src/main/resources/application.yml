@@ -8,7 +8,7 @@ keycloak:
   realm: xxxxx
   auth-server-url: xxxx
   ssl-required: EXTERNAL
-  resource: = gbsp-webservice
+  resource: gbsp-webservice
   credentials:
     secret: xxxx
   use-resource-role-mappings: false
@@ -16,5 +16,8 @@ keycloak:
   securityConstraints:
     - securityCollections:
       - name: spring secured api
-        authRoles: [ 'FULL_ACCESS' ]
-        patterns: ['/*']
+        authRoles:
+          - FULL_ACCESS
+        patterns:
+          - '/post/*'
+          - '/account/*'
