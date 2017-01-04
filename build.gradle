@@ -45,7 +45,7 @@ dependencies {
 
     compile 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
     compile 'org.springframework.boot:spring-boot-starter-web'
-    compile 'org.springframework.boot:spring-boot-starter-security'
+
     compile 'org.keycloak:keycloak-tomcat8-adapter:2.4.0.Final'
     compile 'org.keycloak:keycloak-spring-boot-adapter:2.4.0.Final'
 
@@ -53,7 +53,6 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-core"
     compile "com.fasterxml.jackson.core:jackson-databind"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
-
     compile 'net.java.dev.jna:jna'
     compile 'io.github.microutils:kotlin-logging:1.4.1'
 
