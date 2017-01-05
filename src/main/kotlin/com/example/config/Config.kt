@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate
 import org.springframework.data.elasticsearch.core.EntityMapper
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
+import org.springframework.data.web.config.EnableSpringDataWebSupport
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -33,6 +34,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy
+import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.PathSelectors
@@ -49,6 +51,11 @@ class JacksonConfig {
     @Bean
     fun objectMapperBuilder() = Jackson2ObjectMapperBuilder().modulesToInstall(KotlinModule())!!
 }
+
+@Configuration
+@EnableWebMvc
+@EnableSpringDataWebSupport
+class WebConfig
 
 @Configuration
 @Import(BeanValidatorPluginsConfiguration::class)
