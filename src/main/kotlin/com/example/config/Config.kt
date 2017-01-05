@@ -148,12 +148,8 @@ class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
      */
     @Autowired
     fun configureGlobal(auth: AuthenticationManagerBuilder) {
-        val kcAuthProvider = keycloakAuthenticationProvider()
-
-        val authorityMapper = SimpleAuthorityMapper()
-        authorityMapper.setConvertToUpperCase(true)
-
-        kcAuthProvider.setGrantedAuthoritiesMapper(authorityMapper)
+        val authorityMapper = SimpleAuthorityMapper().apply { setConvertToUpperCase(true) }
+        val kcAuthProvider = keycloakAuthenticationProvider().apply { setGrantedAuthoritiesMapper(authorityMapper) }
         auth.authenticationProvider(kcAuthProvider)
     }
 

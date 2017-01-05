@@ -56,6 +56,7 @@ class GroupServiceImpl(private val groupRepository: GroupRepository) : GroupServ
     }
 }
 
+@Service
 class AccountGroupRolesServiceImpl(
         private val accountGroupRolesRepository: AccountGroupRolesRepository
 ) : AccountGroupRolesService

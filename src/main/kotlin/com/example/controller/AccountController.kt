@@ -43,6 +43,6 @@ class AccountController(
         val token = accessTokenService.accessToken
 
         return Account(
-                null, setOf(), token.preferredUsername, token.email, Role.ADMIN, token.givenName, token.familyName)
+                null, emptySet(), token.preferredUsername, token.email, Role.ADMIN, token.givenName, token.familyName)
     }
 }
