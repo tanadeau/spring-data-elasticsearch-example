@@ -30,6 +30,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration
@@ -140,7 +141,13 @@ class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
      */
     @Autowired
     fun configureGlobal(auth: AuthenticationManagerBuilder) {
-        auth.authenticationProvider(keycloakAuthenticationProvider())
+        val kcAuthProvider = keycloakAuthenticationProvider()
+
+        val authorityMapper = SimpleAuthorityMapper()
+        authorityMapper.setConvertToUpperCase(true)
+
+        kcAuthProvider.setGrantedAuthoritiesMapper(authorityMapper)
+        auth.authenticationProvider(kcAuthProvider)
     }
 
     @Bean
