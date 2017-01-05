@@ -9,14 +9,19 @@ import org.springframework.data.elasticsearch.annotations.FieldType
 @Document(indexName = "example", type = "post")
 data class Post(
         @Id
-        val id: String?,
+        override val id: String?,
+
+        @Field(type = FieldType.String, index = FieldIndex.not_analyzed)
+        override val visibilities: Set<String>,
+
         @Field(type = FieldType.Nested)
         val tags: List<Tag>
-)
+) : ItemReference, Authorizable
 
 data class Tag(
         @Field(type = FieldType.String, index = FieldIndex.not_analyzed)
-        val id: String,
+        val name: String,
+
         @Field(type = FieldType.String)
-        val name: String
+        val value: String
 )

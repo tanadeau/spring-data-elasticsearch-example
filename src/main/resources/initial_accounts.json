@@ -1,0 +1,11 @@
+[
+  {
+    "id": "sampleAccount1",
+    "authorizations": ["public", "admin"],
+    "username": "admin",
+    "email": "sample@gmail.com",
+    "masterRole": "ADMIN",
+    "givenName": "Sample",
+    "familyName": "Sample"
+  }
+]

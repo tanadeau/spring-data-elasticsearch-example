@@ -1,0 +1,12 @@
+[
+  {
+    "id": "sampleGroup1",
+    "name": "Discoverable Group",
+    "description": "Group that can be discovered by anyone"
+  },
+  {
+    "id": "sampleGroup2",
+    "name": "Admin-Only Group",
+    "description": "Group only visible to admins"
+  }
+]

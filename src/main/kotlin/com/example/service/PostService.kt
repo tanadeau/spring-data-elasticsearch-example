@@ -14,7 +14,7 @@ interface PostService {
 }
 
 @Service
-class PostServiceImpl(val postRepository: PostRepository): PostService {
+class PostServiceImpl(val postRepository: PostRepository) : PostService {
     override fun save(post: Post): Post {
         return postRepository.save(post)
     }

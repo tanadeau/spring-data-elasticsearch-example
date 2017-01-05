@@ -5,10 +5,10 @@ elastic:
   hosts: localhost
 
 keycloak:
-  realm: xxxxx
-  auth-server-url: xxxx
+  realm: GbspKeyCloakRealm
+  auth-server-url: https://oauth.biosurv.org/auth
   ssl-required: EXTERNAL
   resource: gbsp-webservice
   credentials:
-    secret: xxxx
+    secret: a6f98226-8bca-41c1-8093-c00a48c30f9e
   use-resource-role-mappings: false

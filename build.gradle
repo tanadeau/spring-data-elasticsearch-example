@@ -30,6 +30,10 @@ jar {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
 repositories {
     mavenCentral()
     maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.1' }
