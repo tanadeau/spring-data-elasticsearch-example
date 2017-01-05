@@ -3,6 +3,7 @@ package com.example.controller
 import com.example.model.Post
 import com.example.service.PostService
 import mu.KLogging
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -14,13 +15,15 @@ class PostController(private val postService: PostService) {
     companion object : KLogging()
 
     @GetMapping(produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE))
-    fun getAll(): List<Post> {
-        return postService.findAll().toList()
+    fun getAllWithAuths(@RequestParam("auth") auths: Set<String>, paging: Pageable): List<Post> {
+        logger.info { "Query using auths $auths and paging $paging" }
+        return postService.findAll(auths, paging).toList()
     }
 
     @GetMapping("/{id}", produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE))
-    fun getById(@PathVariable id: String): ResponseEntity<Post> {
-        val found = postService.findOne(id)
+    fun getById(@PathVariable id: String, @RequestParam("auth") auths: Set<String>): ResponseEntity<Post> {
+        logger.info { "Query using auths $auths" }
+        val found = postService.findById(id, auths)
         return if (found == null) { ResponseEntity.notFound().build() } else { ResponseEntity.ok(found) }
     }
 

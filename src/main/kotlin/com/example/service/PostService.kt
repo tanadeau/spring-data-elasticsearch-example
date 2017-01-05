@@ -3,14 +3,14 @@ package com.example.service
 import com.example.model.Post
 import com.example.repository.PostRepository
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 
 interface PostService {
     fun save(post: Post): Post
-    fun findOne(id: String): Post?
-    fun findAll(): Iterable<Post>
-    fun findByTagsName(tagName: String, pageRequest: PageRequest): Page<Post>
+
+    fun findAll(userAuths: Set<String>, paging: Pageable): Page<Post>
+    fun findById(id: String, userAuths: Set<String>): Post?
 }
 
 @Service
@@ -19,15 +19,11 @@ class PostServiceImpl(private val postRepository: PostRepository) : PostService 
         return postRepository.save(post)
     }
 
-    override fun findOne(id: String): Post? {
-        return postRepository.findOne(id)
+    override fun findById(id: String, userAuths: Set<String>): Post? {
+        return postRepository.findByIdUsingAuths(id, userAuths)
     }
 
-    override fun findAll(): Iterable<Post> {
-        return postRepository.findAll()
-    }
-
-    override fun findByTagsName(tagName: String, pageRequest: PageRequest): Page<Post> {
-        return postRepository.findByTagsName(tagName, pageRequest)
+    override fun findAll(userAuths: Set<String>, paging: Pageable): Page<Post> {
+        return postRepository.findAllUsingAuths(userAuths, paging)
     }
 }
