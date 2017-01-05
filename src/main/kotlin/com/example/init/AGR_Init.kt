@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 
 @Component
-class AccountDbInit(val accountRepository: AccountRepository, val objectMapper: ObjectMapper) {
+class AccountDbInit(private val accountRepository: AccountRepository, private val objectMapper: ObjectMapper) {
     @PostConstruct
     fun initializeDb() {
         val accounts: List<Account> = objectMapper.readValue(
@@ -21,7 +21,7 @@ class AccountDbInit(val accountRepository: AccountRepository, val objectMapper: 
 }
 
 @Component
-class GroupDbInit(val groupRepository: GroupRepository, val objectMapper: ObjectMapper) {
+class GroupDbInit(private val groupRepository: GroupRepository, private val objectMapper: ObjectMapper) {
     @PostConstruct
     fun initializeDb() {
         val groups: List<Group> = objectMapper.readValue(

@@ -43,7 +43,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2
 import java.io.IOException
 import java.net.InetAddress
 
-
 @Configuration
 class JacksonConfig {
     @Bean
@@ -140,7 +139,6 @@ class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
      * Registers the KeycloakAuthenticationProvider with the authentication manager.
      */
     @Autowired
-    @Throws(Exception::class)
     fun configureGlobal(auth: AuthenticationManagerBuilder) {
         auth.authenticationProvider(keycloakAuthenticationProvider())
     }
@@ -150,7 +148,6 @@ class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
         return NullAuthenticatedSessionStrategy()
     }
 
-    @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
         super.configure(http)
 
@@ -172,7 +169,7 @@ class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
     fun configResolver() = KeycloakConfigResolver { kcDeployment }
 }
 
-internal class ElasticsearchEntityMapper(val objectMapper: ObjectMapper) : EntityMapper {
+internal class ElasticsearchEntityMapper(private val objectMapper: ObjectMapper) : EntityMapper {
     override fun <T : Any?> mapToObject(source: String?, clazz: Class<T>?): T {
         return objectMapper.readValue(source, clazz)
     }

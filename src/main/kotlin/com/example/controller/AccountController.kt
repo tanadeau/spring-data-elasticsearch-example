@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/account")
-class AccountController(val accountService: AccountService, val accessTokenService: AccessTokenService) {
+class AccountController(
+        private val accountService: AccountService, private val accessTokenService: AccessTokenService) {
     companion object : KLogging()
 
     @GetMapping(produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE))

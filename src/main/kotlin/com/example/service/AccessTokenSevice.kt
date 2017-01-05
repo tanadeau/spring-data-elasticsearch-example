@@ -12,5 +12,4 @@ class AccessTokenService {
             val kcPrincipal = SecurityContextHolder.getContext().authentication.principal as KeycloakPrincipal<*>
             return kcPrincipal.keycloakSecurityContext.token
         }
-
 }

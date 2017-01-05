@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/group")
-class GroupController(val groupService: GroupService) {
+class GroupController(private val groupService: GroupService) {
     companion object : KLogging()
 
     @GetMapping(produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE))

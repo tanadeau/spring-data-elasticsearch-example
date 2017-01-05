@@ -23,7 +23,7 @@ interface GroupService {
 interface AccountGroupRolesService
 
 @Service
-class AccountServiceImpl(val accountRepository: AccountRepository) : AccountService {
+class AccountServiceImpl(private val accountRepository: AccountRepository) : AccountService {
     override fun save(account: Account): Account {
         return accountRepository.save(account)
     }
@@ -42,7 +42,7 @@ class AccountServiceImpl(val accountRepository: AccountRepository) : AccountServ
 }
 
 @Service
-class GroupServiceImpl(val groupRepository: GroupRepository) : GroupService {
+class GroupServiceImpl(private val groupRepository: GroupRepository) : GroupService {
     override fun save(group: Group): Group {
         return groupRepository.save(group)
     }
@@ -57,5 +57,5 @@ class GroupServiceImpl(val groupRepository: GroupRepository) : GroupService {
 }
 
 class AccountGroupRolesServiceImpl(
-        val accountGroupRolesRepository: AccountGroupRolesRepository
+        private val accountGroupRolesRepository: AccountGroupRolesRepository
 ) : AccountGroupRolesService
