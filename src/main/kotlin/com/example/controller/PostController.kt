@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/post")
-class PostController(val postService: PostService) {
+class PostController(private val postService: PostService) {
     companion object : KLogging()
 
     @GetMapping(produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE))
