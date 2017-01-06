@@ -179,7 +179,7 @@ class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
     fun configResolver() = KeycloakConfigResolver { kcDeployment }
 }
 
-internal class ElasticsearchEntityMapper(private val objectMapper: ObjectMapper) : EntityMapper {
+private class ElasticsearchEntityMapper(private val objectMapper: ObjectMapper) : EntityMapper {
     override fun <T : Any?> mapToObject(source: String?, clazz: Class<T>?): T {
         return objectMapper.readValue(source, clazz)
     }
