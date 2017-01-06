@@ -1,5 +1,6 @@
 package com.example.config
 
+import com.example.service.AccountService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.common.net.HostAndPort
@@ -10,11 +11,14 @@ import org.elasticsearch.cluster.ClusterName
 import org.elasticsearch.common.settings.Settings.settingsBuilder
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import org.elasticsearch.node.NodeBuilder.nodeBuilder
+import org.keycloak.KeycloakPrincipal
 import org.keycloak.adapters.KeycloakConfigResolver
 import org.keycloak.adapters.KeycloakDeployment
 import org.keycloak.adapters.KeycloakDeploymentBuilder
 import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents
+import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken
 import org.keycloak.representations.adapters.config.AdapterConfig
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -31,7 +35,9 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy
 import org.springframework.web.servlet.config.annotation.EnableWebMvc
@@ -138,7 +144,7 @@ class ESConfig {
 @Configuration
 @EnableWebSecurity
 @ComponentScan(basePackageClasses = arrayOf(KeycloakSecurityComponents::class))
-class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
+class KeycloakSecurityConfig(private val accountService: AccountService) : KeycloakWebSecurityConfigurerAdapter() {
     private val kcDeployment: KeycloakDeployment by lazy {
         KeycloakDeploymentBuilder.build(keycloakAdapterConfig())!!
     }
@@ -156,6 +162,10 @@ class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
     @Bean
     override fun sessionAuthenticationStrategy(): SessionAuthenticationStrategy {
         return NullAuthenticatedSessionStrategy()
+    }
+
+    override fun keycloakAuthenticationProvider(): KeycloakAuthenticationProvider {
+        return KeycloakUserDetailsAuthenticationProvider(accountService)
     }
 
     override fun configure(http: HttpSecurity) {
@@ -186,5 +196,20 @@ private class ElasticsearchEntityMapper(private val objectMapper: ObjectMapper) 
 
     override fun mapToString(`object`: Any?): String {
         return objectMapper.writeValueAsString(`object`)
+    }
+}
+
+private class KeycloakUserDetailsAuthenticationProvider(private val accountService: AccountService) :
+        KeycloakAuthenticationProvider() {
+    override fun authenticate(authentication: Authentication?): Authentication? {
+        val kcToken = super.authenticate(authentication) as KeycloakAuthenticationToken? ?: return null
+        val kcPrincipal = kcToken.principal as KeycloakPrincipal<*>
+        val username = kcPrincipal.keycloakSecurityContext.token.preferredUsername ?: return null
+
+        if (accountService.findByUsername(username) != null) {
+            return kcToken
+        } else {
+            throw UsernameNotFoundException("Could not find account with username $username")
+        }
     }
 }
