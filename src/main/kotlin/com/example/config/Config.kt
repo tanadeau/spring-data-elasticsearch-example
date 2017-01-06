@@ -163,8 +163,8 @@ class KeycloakSecurityConfig : KeycloakWebSecurityConfigurerAdapter() {
 
         http
                 .authorizeRequests()
-                .antMatchers("/post*").authenticated()
-                .antMatchers("/admin*").authenticated()
+                .antMatchers("/post/**").authenticated()
+                .antMatchers("/account/**").authenticated()
                 .anyRequest().permitAll().and()
                 .csrf().disable()
     }
