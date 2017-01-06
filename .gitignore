@@ -26,3 +26,5 @@ nbdist/
 
 data/
 .DS_Store
+
+/src/main/resources/application-local.yml

@@ -3,9 +3,27 @@
     "id": "sampleAccount1",
     "authorizations": ["public", "admin"],
     "username": "admin",
-    "email": "sample@gmail.com",
+    "email": "sample.admin@example.com",
     "masterRole": "ADMIN",
     "givenName": "Sample",
     "familyName": "Sample"
+  },
+  {
+    "id": "sampleAccount2",
+    "authorizations": ["public", "user"],
+    "username": "user",
+    "email": "sample.user@example.com",
+    "masterRole": "USER",
+    "givenName": "Sample",
+    "familyName": "Sample"
+  },
+  {
+    "id": "sampleAccount3",
+    "authorizations": ["public", "user"],
+    "username": "stapljd1",
+    "email": "sample.user.2@example.com",
+    "masterRole": "USER",
+    "givenName": "Sample1",
+    "familyName": "Sample1"
   }
 ]
