@@ -8,12 +8,11 @@ import org.springframework.stereotype.Service
 @Service
 class SecurityInfoService {
     val authentication: KeycloakAccountAuthenticationToken
-        get() {
-            return SecurityContextHolder.getContext().authentication as KeycloakAccountAuthenticationToken
-        }
+        get() = SecurityContextHolder.getContext().authentication as KeycloakAccountAuthenticationToken
 
     val account: Account
-        get() {
-            return authentication.domainAccount
-        }
+        get() = authentication.domainAccount
+
+    val auths: Set<String>
+        get() = account.authorizations
 }

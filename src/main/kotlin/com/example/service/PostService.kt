@@ -9,21 +9,16 @@ import org.springframework.stereotype.Service
 interface PostService {
     fun save(post: Post): Post
 
-    fun findAll(userAuths: Set<String>, paging: Pageable): Page<Post>
-    fun findById(id: String, userAuths: Set<String>): Post?
+    fun findAll(paging: Pageable): Page<Post>
+    fun findById(id: String): Post?
 }
 
 @Service
-class PostServiceImpl(private val postRepository: PostRepository) : PostService {
-    override fun save(post: Post): Post {
-        return postRepository.save(post)
-    }
+class PostServiceImpl(
+        private val postRepository: PostRepository,
+        private val securityInfoService: SecurityInfoService) : PostService {
+    override fun save(post: Post) = postRepository.save(post)!!
 
-    override fun findById(id: String, userAuths: Set<String>): Post? {
-        return postRepository.findByIdUsingAuths(id, userAuths)
-    }
-
-    override fun findAll(userAuths: Set<String>, paging: Pageable): Page<Post> {
-        return postRepository.findAllUsingAuths(userAuths, paging)
-    }
+    override fun findById(id: String) = postRepository.findByIdUsingAuths(id, securityInfoService.auths)
+    override fun findAll(paging: Pageable) = postRepository.findAllUsingAuths(securityInfoService.auths, paging)
 }
