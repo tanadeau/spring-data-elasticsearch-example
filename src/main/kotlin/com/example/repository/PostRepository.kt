@@ -21,7 +21,7 @@ class PostRepositoryImpl(private val elasticsearchTemplate: ElasticsearchTemplat
     override fun findByIdUsingAuths(id: String, userAuths: Set<String>): Post? {
         val query = NativeSearchQueryBuilder()
                 .withIds(listOf(id))
-                .withFilter(QueryBuilders.termsQuery("visibilities", userAuths))
+                .withFilter(QueryBuilders.termsQuery(Post::visibilities.name, userAuths))
                 .build()
 
         return elasticsearchTemplate.queryForPage(query, Post::class.java).firstOrNull()
@@ -30,7 +30,7 @@ class PostRepositoryImpl(private val elasticsearchTemplate: ElasticsearchTemplat
     override fun findAllUsingAuths(userAuths: Set<String>, paging: Pageable): Page<Post> {
         val query = NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.matchAllQuery())
-                .withFilter(QueryBuilders.termsQuery("visibilities", userAuths))
+                .withFilter(QueryBuilders.termsQuery(Post::visibilities.name, userAuths))
                 .withPageable(paging)
                 .build()
 
