@@ -1,13 +1,9 @@
 package com.example.service
 
-import com.example.model.Authorizable
 import com.example.model.Post
 import com.example.repository.PostRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.messaging.MessageHeaders
-import org.springframework.messaging.core.MessageSendingOperations
-import org.springframework.messaging.support.MessageBuilder
 import org.springframework.stereotype.Service
 
 interface PostService {
@@ -21,13 +17,10 @@ interface PostService {
 class PostServiceImpl(
         private val postRepository: PostRepository,
         private val securityInfoService: SecurityInfoService,
-        private var messagingTemplate: MessageSendingOperations<String>) : PostService {
-    override fun save(post: Post): Post {
-        return postRepository.save(post).apply {
-            messagingTemplate.convertAndSend("/topic/activity", this, {msg ->
-                MessageBuilder.fromMessage(msg).setHeader(Authorizable::visibilities.name, visibilities).build()
-            })
-        }
+        private var liveEventService: StompLiveEventsService) : PostService {
+
+    override fun save(post: Post): Post = postRepository.save(post).apply {
+        liveEventService.save(this)
     }
 
     override fun findById(id: String) = postRepository.findByIdUsingAuths(id, securityInfoService.auths)
