@@ -7,16 +7,16 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken
 import org.springframework.context.ApplicationListener
 import org.springframework.messaging.Message
 import org.springframework.messaging.MessageChannel
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.messaging.simp.SimpMessageType
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor
 import org.springframework.messaging.support.ChannelInterceptorAdapter
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.messaging.SessionConnectEvent
-import java.util.*
+import org.springframework.web.socket.messaging.SessionDisconnectEvent
+import java.util.concurrent.ConcurrentHashMap
 
-// make thread safe
-val sessionRepo = HashMap<String, KeycloakAuthenticationToken>()
+// requires to be thread safe
+val sessionRepo = ConcurrentHashMap<String, KeycloakAuthenticationToken>()
 
 fun Set<*>.containsAny(other: Iterable<*>?): Boolean {
     return other != null && other.any { contains(it) }
@@ -28,12 +28,9 @@ class RequestHandshakeMessageInterceptor(val accountRepository: AccountRepositor
 
     override fun preSend(message: Message<*>, channel: MessageChannel): Message<*>? {
         val accessor = StompHeaderAccessor.wrap(message)
-        val sessionHeaders = SimpMessageHeaderAccessor.getSessionAttributes(message.headers)
         if (accessor.messageType == SimpMessageType.MESSAGE) {
             val user = sessionRepo[accessor.sessionId] ?: return null
-            logger.info { "channel::presend session headers $sessionHeaders" }
             val username = user.account?.keycloakSecurityContext?.token?.preferredUsername
-            logger.info { "CHANNEL::PRESEND to ${accessor.destination} for user ${username.orEmpty()}" }
             val visibilities = accessor.getHeader(Authorizable::visibilities.name) as? Iterable<*>
             if (username == null ||
                     !(accountRepository.findByUsername(username)?.authorizations?.containsAny(visibilities)?:false)) {
@@ -52,13 +49,24 @@ class StompConnectionEvent() : ApplicationListener<SessionConnectEvent> {
 
     override fun onApplicationEvent(event: SessionConnectEvent) {
         val sha = StompHeaderAccessor.wrap(event.message)
-        logger.info { "Websocket Connection: $sha from ${event.user?.name ?: "annon"} @ ${event.source}" }
-        val user = sha.user as KeycloakAuthenticationToken?
+        logger.info { "Websocket Connection: ${sha.sessionId} from ${event.user?.name ?: "annon"}" }
+        val user = sha.user as? KeycloakAuthenticationToken?
         if (user != null) {
-            sha.sessionAttributes["accessToken"] = user.account.keycloakSecurityContext.token
             sessionRepo[sha.sessionId] = user
         } else {
             sessionRepo.remove(sha.sessionId)
         }
+    }
+}
+
+@Component
+class StompDisconnectionEvent() : ApplicationListener<SessionDisconnectEvent> {
+
+    companion object : KLogging()
+
+    override fun onApplicationEvent(event: SessionDisconnectEvent) {
+        val sha = StompHeaderAccessor.wrap(event.message)
+        logger.info { "Websocket disconnect: ${sha.sessionId} from ${event.user?.name ?: "annon"}" }
+        sessionRepo.remove(sha.sessionId)
     }
 }

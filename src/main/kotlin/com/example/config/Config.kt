@@ -65,7 +65,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2
 import java.io.IOException
 import java.net.InetAddress
 
-
 @Configuration
 class JacksonConfig {
     @Bean
@@ -159,6 +158,10 @@ class ESConfig {
 @EnableWebSecurity
 @ComponentScan(basePackageClasses = arrayOf(KeycloakSecurityComponents::class))
 class KeycloakSecurityConfig(private val accountService: AccountService) : KeycloakWebSecurityConfigurerAdapter() {
+    private val kcDeployment: KeycloakDeployment by lazy {
+        KeycloakDeploymentBuilder.build(keycloakAdapterConfig())!!
+    }
+
     /**
      * Registers the KeycloakAuthenticationProvider with the authentication manager.
      */
@@ -184,15 +187,12 @@ class KeycloakSecurityConfig(private val accountService: AccountService) : Keycl
         http
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests()
-                .antMatchers("/post*").authenticated()
+                .antMatchers("/post/**").authenticated()
                 .antMatchers("/account/**").authenticated()
-                .antMatchers("/websocket*").permitAll()
+                .antMatchers("/websocket/**").permitAll()
                 .anyRequest().permitAll().and()
                 .csrf().disable()
     }
-
-    @Bean
-    fun kcDeployment(): KeycloakDeployment = KeycloakDeploymentBuilder.build(keycloakAdapterConfig())!!
 
     @Bean
     @ConfigurationProperties("keycloak")
@@ -201,7 +201,7 @@ class KeycloakSecurityConfig(private val accountService: AccountService) : Keycl
     }
 
     @Bean
-    fun configResolver() = KeycloakConfigResolver { kcDeployment() }
+    fun configResolver() = KeycloakConfigResolver { kcDeployment }
 }
 
 /**

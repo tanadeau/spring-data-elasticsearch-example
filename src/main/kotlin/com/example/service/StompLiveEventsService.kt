@@ -11,9 +11,9 @@ interface StompLiveEventsService {
 
 @Service
 class StompLiveEventsServiceImpl(private var messagingTemplate: MessageSendingOperations<String>) : StompLiveEventsService {
-    override fun save(item: Authorizable) {
-        messagingTemplate.convertAndSend("/topic/activity", item, {msg ->
-            MessageBuilder.fromMessage(msg).setHeader(Authorizable::visibilities.name, item.visibilities).build()
+    override fun save(authorizable: Authorizable) {
+        messagingTemplate.convertAndSend("/topic/activity", authorizable, { msg ->
+            MessageBuilder.fromMessage(msg).setHeader(Authorizable::visibilities.name, authorizable.visibilities).build()
         })
     }
 
