@@ -1,9 +1,8 @@
 package com.example.controller
 
 import com.example.model.Account
-import com.example.model.Role
-import com.example.service.AccessTokenService
 import com.example.service.AccountService
+import com.example.service.SecurityInfoService
 import mu.KLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -13,7 +12,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/account")
 class AccountController(
-        private val accountService: AccountService, private val accessTokenService: AccessTokenService) {
+        private val accountService: AccountService, private val securityInfoService: SecurityInfoService) {
     companion object : KLogging()
 
     @GetMapping(produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE))
@@ -40,9 +39,6 @@ class AccountController(
     @GetMapping("/whoami", produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE))
     @ResponseBody
     fun getUserInformation(): Account {
-        val token = accessTokenService.accessToken
-
-        return Account(
-                null, emptySet(), token.preferredUsername, token.email, Role.ADMIN, token.givenName, token.familyName)
+        return securityInfoService.account
     }
 }

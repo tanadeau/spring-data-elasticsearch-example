@@ -1,5 +1,6 @@
 package com.example.config
 
+import com.example.model.Account
 import com.example.service.AccountService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -15,6 +16,7 @@ import org.keycloak.KeycloakPrincipal
 import org.keycloak.adapters.KeycloakConfigResolver
 import org.keycloak.adapters.KeycloakDeployment
 import org.keycloak.adapters.KeycloakDeploymentBuilder
+import org.keycloak.adapters.spi.KeycloakAccount
 import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter
@@ -36,6 +38,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy
@@ -165,7 +168,7 @@ class KeycloakSecurityConfig(private val accountService: AccountService) : Keycl
     }
 
     override fun keycloakAuthenticationProvider(): KeycloakAuthenticationProvider {
-        return KeycloakUserDetailsAuthenticationProvider(accountService)
+        return KeycloakAccountAuthenticationProvider(accountService)
     }
 
     override fun configure(http: HttpSecurity) {
@@ -199,17 +202,22 @@ private class ElasticsearchEntityMapper(private val objectMapper: ObjectMapper) 
     }
 }
 
-private class KeycloakUserDetailsAuthenticationProvider(private val accountService: AccountService) :
+private class KeycloakAccountAuthenticationProvider(private val accountService: AccountService) :
         KeycloakAuthenticationProvider() {
     override fun authenticate(authentication: Authentication?): Authentication? {
         val kcToken = super.authenticate(authentication) as KeycloakAuthenticationToken? ?: return null
         val kcPrincipal = kcToken.principal as KeycloakPrincipal<*>
         val username = kcPrincipal.keycloakSecurityContext.token.preferredUsername ?: return null
 
-        if (accountService.findByUsername(username) != null) {
-            return kcToken
-        } else {
-            throw UsernameNotFoundException("Could not find account with username $username")
-        }
+        val account = accountService.findByUsername(username) ?:
+                throw UsernameNotFoundException("Could not find account with username $username")
+
+        return KeycloakAccountAuthenticationToken(account, kcToken.account, kcToken.authorities)
     }
+}
+
+class KeycloakAccountAuthenticationToken(
+        val domainAccount: Account, kcAccount: KeycloakAccount, authorities: Collection<GrantedAuthority>) :
+        KeycloakAuthenticationToken(kcAccount, authorities) {
+    override fun getPrincipal() = domainAccount
 }
