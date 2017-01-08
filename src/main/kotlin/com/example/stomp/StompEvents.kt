@@ -15,8 +15,9 @@ import org.springframework.web.socket.messaging.SessionConnectEvent
 import org.springframework.web.socket.messaging.SessionDisconnectEvent
 import java.util.concurrent.ConcurrentHashMap
 
+typealias SessionId = String
 // required to be thread safe
-internal val sessionRepo = ConcurrentHashMap<String, KeycloakAuthenticationToken>()
+internal val sessionRepo = ConcurrentHashMap<SessionId, KeycloakAuthenticationToken>()
 
 internal fun Set<*>.containsAny(other: Iterable<*>?): Boolean {
     return other != null && other.any { contains(it) }
