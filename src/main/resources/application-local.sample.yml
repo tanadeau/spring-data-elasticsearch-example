@@ -1,0 +1,10 @@
+spring:
+    profiles: local
+keycloak:
+  realm: XXXX
+  auth-server-url: https://XXXXX/auth
+  ssl-required: EXTERNAL
+  resource: XXXXX
+  credentials:
+    secret: XXXXX
+  use-resource-role-mappings: false

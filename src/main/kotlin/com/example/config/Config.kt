@@ -1,7 +1,9 @@
 package com.example.config
 
 import com.example.model.Account
+import com.example.repository.AccountRepository
 import com.example.service.AccountService
+import com.example.stomp.RequestHandshakeMessageInterceptor
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.common.net.HostAndPort
@@ -34,9 +36,14 @@ import org.springframework.data.elasticsearch.core.EntityMapper
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
 import org.springframework.data.web.config.EnableSpringDataWebSupport
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
+import org.springframework.messaging.simp.config.ChannelRegistration
+import org.springframework.messaging.simp.config.MessageBrokerRegistry
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry
+import org.springframework.security.config.annotation.web.socket.AbstractSecurityWebSocketMessageBrokerConfigurer
+import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper
@@ -44,6 +51,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy
 import org.springframework.web.servlet.config.annotation.EnableWebMvc
+import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.PathSelectors
@@ -175,9 +185,11 @@ class KeycloakSecurityConfig(private val accountService: AccountService) : Keycl
         super.configure(http)
 
         http
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests()
                 .antMatchers("/post/**").authenticated()
                 .antMatchers("/account/**").authenticated()
+                .antMatchers("/websocket/**").authenticated()
                 .anyRequest().permitAll().and()
                 .csrf().disable()
     }
@@ -190,6 +202,44 @@ class KeycloakSecurityConfig(private val accountService: AccountService) : Keycl
 
     @Bean
     fun configResolver() = KeycloakConfigResolver { kcDeployment }
+}
+
+/**
+ *   Help on setting up a full broker: (scaling up websockets)
+ *      https://raymondhlee.wordpress.com/2014/04/12/set-up-a-full-broker-for-spring-4-stomp-over-websocket-messaging-using-activemq/
+ */
+
+@Configuration
+@EnableWebSocketMessageBroker
+class WebSocketConfig : AbstractWebSocketMessageBrokerConfigurer() {
+    companion object : KLogging()
+
+    override fun configureMessageBroker(config: MessageBrokerRegistry) {
+        //config.enableStompBrokerRelay("/topic").setRelayHost("host").setRelayPort(1000).setSystemHeartbeatReceiveInterval(12)
+        config.enableSimpleBroker("/topic/activity")
+        config.setApplicationDestinationPrefixes("/gbsp")
+    }
+
+    override fun registerStompEndpoints(registry: StompEndpointRegistry) {
+        registry.addEndpoint("/websocket")
+    }
+}
+
+@Configuration
+class WebSocketSecurityConfig(private val accountRepository: AccountRepository) : AbstractSecurityWebSocketMessageBrokerConfigurer() {
+    companion object : KLogging()
+
+    override fun configureInbound(messages: MessageSecurityMetadataSourceRegistry) {
+        messages.anyMessage().permitAll()
+    }
+
+    override fun configureClientOutboundChannel(registration: ChannelRegistration) {
+        registration.setInterceptors(RequestHandshakeMessageInterceptor(accountRepository))
+    }
+
+    override fun sameOriginDisabled(): Boolean {
+        return true
+    }
 }
 
 private class ElasticsearchEntityMapper(private val objectMapper: ObjectMapper) : EntityMapper {

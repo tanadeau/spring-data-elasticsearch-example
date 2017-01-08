@@ -16,8 +16,12 @@ interface PostService {
 @Service
 class PostServiceImpl(
         private val postRepository: PostRepository,
-        private val securityInfoService: SecurityInfoService) : PostService {
-    override fun save(post: Post) = postRepository.save(post)!!
+        private val securityInfoService: SecurityInfoService,
+        private val liveEventService: StompLiveEventsService) : PostService {
+
+    override fun save(post: Post): Post = postRepository.save(post).apply {
+        liveEventService.save(this)
+    }
 
     override fun findById(id: String) = postRepository.findByIdUsingAuths(id, securityInfoService.auths)
     override fun findAll(paging: Pageable) = postRepository.findAllUsingAuths(securityInfoService.auths, paging)

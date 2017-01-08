@@ -50,12 +50,17 @@ dependencies {
 
     compile 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
     compile 'org.springframework.boot:spring-boot-starter-web'
+    compile 'org.springframework.boot:spring-boot-starter-security'
+    compile 'org.springframework.boot:spring-boot-starter-websocket'
+    compile 'org.springframework:spring-messaging'
+    compile 'org.springframework.security:spring-security-messaging'
+
 
     compile 'org.keycloak:keycloak-spring-security-adapter:2.4.0.Final'
 
     compile 'com.google.guava:guava:20.0'
-    compile "com.fasterxml.jackson.core:jackson-core"
-    compile "com.fasterxml.jackson.core:jackson-databind"
+    compile 'com.fasterxml.jackson.core:jackson-core'
+    compile 'com.fasterxml.jackson.core:jackson-databind'
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
 
     compile 'io.github.microutils:kotlin-logging:1.4.1'
@@ -69,6 +74,10 @@ dependencies {
 
 springBoot {
     mainClass = 'com.example.DemoApplicationKt'
+}
+
+bootRun {
+    environment SPRING_PROFILES_ACTIVE: environment.SPRING_PROFILES_ACTIVE ?: "local"
 }
 
 task wrapper(type: Wrapper) {
