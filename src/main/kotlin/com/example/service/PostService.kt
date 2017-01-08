@@ -17,7 +17,7 @@ interface PostService {
 class PostServiceImpl(
         private val postRepository: PostRepository,
         private val securityInfoService: SecurityInfoService,
-        private var liveEventService: StompLiveEventsService) : PostService {
+        private val liveEventService: StompLiveEventsService) : PostService {
 
     override fun save(post: Post): Post = postRepository.save(post).apply {
         liveEventService.save(this)

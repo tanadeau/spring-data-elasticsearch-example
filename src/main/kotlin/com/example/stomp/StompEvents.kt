@@ -15,15 +15,15 @@ import org.springframework.web.socket.messaging.SessionConnectEvent
 import org.springframework.web.socket.messaging.SessionDisconnectEvent
 import java.util.concurrent.ConcurrentHashMap
 
-// requires to be thread safe
-val sessionRepo = ConcurrentHashMap<String, KeycloakAuthenticationToken>()
+// required to be thread safe
+internal val sessionRepo = ConcurrentHashMap<String, KeycloakAuthenticationToken>()
 
-fun Set<*>.containsAny(other: Iterable<*>?): Boolean {
+internal fun Set<*>.containsAny(other: Iterable<*>?): Boolean {
     return other != null && other.any { contains(it) }
 }
 
 @Component
-class RequestHandshakeMessageInterceptor(val accountRepository: AccountRepository) : ChannelInterceptorAdapter() {
+class RequestHandshakeMessageInterceptor(private val accountRepository: AccountRepository) : ChannelInterceptorAdapter() {
     companion object : KLogging()
 
     override fun preSend(message: Message<*>, channel: MessageChannel): Message<*>? {
@@ -43,7 +43,7 @@ class RequestHandshakeMessageInterceptor(val accountRepository: AccountRepositor
 }
 
 @Component
-class StompConnectionEvent() : ApplicationListener<SessionConnectEvent> {
+class StompConnectionEvent : ApplicationListener<SessionConnectEvent> {
 
     companion object : KLogging()
 
@@ -60,7 +60,7 @@ class StompConnectionEvent() : ApplicationListener<SessionConnectEvent> {
 }
 
 @Component
-class StompDisconnectionEvent() : ApplicationListener<SessionDisconnectEvent> {
+class StompDisconnectionEvent : ApplicationListener<SessionDisconnectEvent> {
 
     companion object : KLogging()
 

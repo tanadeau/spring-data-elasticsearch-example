@@ -189,7 +189,7 @@ class KeycloakSecurityConfig(private val accountService: AccountService) : Keycl
                 .authorizeRequests()
                 .antMatchers("/post/**").authenticated()
                 .antMatchers("/account/**").authenticated()
-                .antMatchers("/websocket/**").permitAll()
+                .antMatchers("/websocket/**").authenticated()
                 .anyRequest().permitAll().and()
                 .csrf().disable()
     }
@@ -213,6 +213,7 @@ class KeycloakSecurityConfig(private val accountService: AccountService) : Keycl
 @EnableWebSocketMessageBroker
 class WebSocketConfig : AbstractWebSocketMessageBrokerConfigurer() {
     companion object : KLogging()
+
     override fun configureMessageBroker(config: MessageBrokerRegistry) {
         //config.enableStompBrokerRelay("/topic").setRelayHost("host").setRelayPort(1000).setSystemHeartbeatReceiveInterval(12)
         config.enableSimpleBroker("/topic/activity")
@@ -225,11 +226,11 @@ class WebSocketConfig : AbstractWebSocketMessageBrokerConfigurer() {
 }
 
 @Configuration
-class WebSocketSecurityConfig(val accountRepository: AccountRepository) : AbstractSecurityWebSocketMessageBrokerConfigurer() {
+class WebSocketSecurityConfig(private val accountRepository: AccountRepository) : AbstractSecurityWebSocketMessageBrokerConfigurer() {
     companion object : KLogging()
+
     override fun configureInbound(messages: MessageSecurityMetadataSourceRegistry) {
-        messages
-                .anyMessage().permitAll()
+        messages.anyMessage().permitAll()
     }
 
     override fun configureClientOutboundChannel(registration: ChannelRegistration) {
