@@ -14,5 +14,5 @@ class SecurityInfoService {
         get() = authentication.domainAccount
 
     val auths: Set<String>
-        get() = account.authorizations
+        get() = account.groupMemberships
 }

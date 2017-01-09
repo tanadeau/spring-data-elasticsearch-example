@@ -24,7 +24,8 @@ internal fun Set<*>.containsAny(other: Iterable<*>?): Boolean {
 }
 
 @Component
-class RequestHandshakeMessageInterceptor(private val accountRepository: AccountRepository) : ChannelInterceptorAdapter() {
+class RequestHandshakeMessageInterceptor(
+        private val accountRepository: AccountRepository) : ChannelInterceptorAdapter() {
     companion object : KLogging()
 
     override fun preSend(message: Message<*>, channel: MessageChannel): Message<*>? {
@@ -33,19 +34,21 @@ class RequestHandshakeMessageInterceptor(private val accountRepository: AccountR
             val user = sessionRepo[accessor.sessionId] ?: return null
             val username = user.account?.keycloakSecurityContext?.token?.preferredUsername
             val visibilities = accessor.getHeader(Authorizable::visibilities.name) as? Iterable<*>
-            if (username == null ||
-                    !(accountRepository.findByUsername(username)?.authorizations?.containsAny(visibilities)?:false)) {
+            if (!checkAuths(visibilities, username)) {
                 logger.info { "user ${username.orEmpty()} not authorized to see message" }
                 return null
             }
         }
         return message
     }
+
+    private fun checkAuths(visibilities: Iterable<*>?, username: String?) =
+            username != null &&
+                    accountRepository.findByUsername(username)?.groupMemberships?.containsAny(visibilities) ?: false
 }
 
 @Component
 class StompConnectionEvent : ApplicationListener<SessionConnectEvent> {
-
     companion object : KLogging()
 
     override fun onApplicationEvent(event: SessionConnectEvent) {
@@ -62,7 +65,6 @@ class StompConnectionEvent : ApplicationListener<SessionConnectEvent> {
 
 @Component
 class StompDisconnectionEvent : ApplicationListener<SessionDisconnectEvent> {
-
     companion object : KLogging()
 
     override fun onApplicationEvent(event: SessionDisconnectEvent) {

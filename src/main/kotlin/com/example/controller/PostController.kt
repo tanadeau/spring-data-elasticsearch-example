@@ -15,7 +15,7 @@ class PostController(private val postService: PostService) {
     companion object : KLogging()
 
     @GetMapping(produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE))
-    fun getAllWithAuths(paging: Pageable): List<Post> {
+    fun getAll(paging: Pageable): List<Post> {
         return postService.findAll(paging).toList()
     }
 
@@ -28,7 +28,6 @@ class PostController(private val postService: PostService) {
     @PostMapping(
             consumes = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE),
             produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE))
-    @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody newPost: Post): Post {
         val saved = postService.save(newPost)
         logger.info { "Saved new post with ID ${saved.id}" }

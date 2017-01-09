@@ -12,7 +12,7 @@ data class Account(
         override val id: String?,
 
         @Field(type = FieldType.String, index = FieldIndex.not_analyzed)
-        val authorizations: Set<String>,
+        val groupMemberships: Set<String>,
 
         @Field(type = FieldType.String, index = FieldIndex.not_analyzed)
         val username: String,
@@ -21,7 +21,7 @@ data class Account(
         val email: String,
 
         @Field(type = FieldType.String, index = FieldIndex.not_analyzed)
-        val masterRole: Role,
+        val systemRole: SystemRole,
 
         @Field(type = FieldType.String, index = FieldIndex.not_analyzed)
         val givenName: String,
@@ -30,34 +30,7 @@ data class Account(
         val familyName: String
 ) : ItemReference
 
-@Document(indexName = "example", type = "group")
-data class Group(
-        @Id
-        override val id: String?,
-
-        @Field(type = FieldType.String)
-        val name: String,
-
-        @Field(type = FieldType.String)
-        val description: String
-) : ItemReference
-
-@Document(indexName = "example", type = "accountGroupRoles")
-data class AccountGroupRoles(
-        @Id
-        override val id: String?,
-
-        @Field(type = FieldType.String, index = FieldIndex.not_analyzed)
-        val accountId: String,
-
-        @Field(type = FieldType.String, index = FieldIndex.not_analyzed)
-        val groupId: String,
-
-        @Field(type = FieldType.String, index = FieldIndex.not_analyzed)
-        val roles: Set<Role>
-) : ItemReference
-
-enum class Role {
+enum class SystemRole {
     USER,
     ADMIN
 }

@@ -1,0 +1,36 @@
+[
+  {
+    "id": "samplePost1",
+    "visibilities": ["public"],
+    "tags": [
+      {
+        "name": "hello",
+        "value": "world"
+      },
+      {
+        "name": "foo",
+        "value": "bar"
+      }
+    ]
+  },
+  {
+    "id": "samplePost2",
+    "visibilities": ["sampleGroup1"],
+    "tags": [
+      {
+        "name": "baz",
+        "value": "quux"
+      }
+    ]
+  },
+  {
+    "id": "samplePost3",
+    "visibilities": ["sampleGroup2"],
+    "tags": [
+      {
+        "name": "blah",
+        "value": "yackity"
+      }
+    ]
+  }
+]

@@ -1,12 +1,35 @@
 [
   {
+    "id": "public",
+    "name": "Public Resources",
+    "description": "Resources all users can see",
+    "discoverable": true,
+    "globallyReadable": true,
+    "roles": {
+      "users": [],
+      "admins": []
+    }
+  },
+  {
     "id": "sampleGroup1",
     "name": "Discoverable Group",
-    "description": "Group that can be discovered by anyone"
+    "description": "Group that can be discovered by anyone",
+    "discoverable": true,
+    "globallyReadable": false,
+    "roles": {
+      "users": ["sampleAccount2"],
+      "admins": ["sampleAccount1"]
+    }
   },
   {
     "id": "sampleGroup2",
-    "name": "Admin-Only Group",
-    "description": "Group only visible to admins"
+    "name": "Other groups",
+    "description": "Some other group",
+    "discoverable": false,
+    "globallyReadable": false,
+    "roles": {
+      "users": ["sampleAccount3"],
+      "admins": []
+    }
   }
 ]

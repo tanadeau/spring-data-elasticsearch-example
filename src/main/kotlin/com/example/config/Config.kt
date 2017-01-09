@@ -2,7 +2,6 @@ package com.example.config
 
 import com.example.model.Account
 import com.example.repository.AccountRepository
-import com.example.service.AccountService
 import com.example.stomp.RequestHandshakeMessageInterceptor
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -157,7 +156,8 @@ class ESConfig {
 @Configuration
 @EnableWebSecurity
 @ComponentScan(basePackageClasses = arrayOf(KeycloakSecurityComponents::class))
-class KeycloakSecurityConfig(private val accountService: AccountService) : KeycloakWebSecurityConfigurerAdapter() {
+class KeycloakSecurityConfig(
+        private val accountRepository: AccountRepository) : KeycloakWebSecurityConfigurerAdapter() {
     private val kcDeployment: KeycloakDeployment by lazy {
         KeycloakDeploymentBuilder.build(keycloakAdapterConfig())!!
     }
@@ -178,7 +178,7 @@ class KeycloakSecurityConfig(private val accountService: AccountService) : Keycl
     }
 
     override fun keycloakAuthenticationProvider(): KeycloakAuthenticationProvider {
-        return KeycloakAccountAuthenticationProvider(accountService)
+        return KeycloakAccountAuthenticationProvider(accountRepository)
     }
 
     override fun configure(http: HttpSecurity) {
@@ -252,14 +252,14 @@ private class ElasticsearchEntityMapper(private val objectMapper: ObjectMapper) 
     }
 }
 
-private class KeycloakAccountAuthenticationProvider(private val accountService: AccountService) :
+private class KeycloakAccountAuthenticationProvider(private val accountRepository: AccountRepository) :
         KeycloakAuthenticationProvider() {
     override fun authenticate(authentication: Authentication?): Authentication? {
         val kcToken = super.authenticate(authentication) as KeycloakAuthenticationToken? ?: return null
         val kcPrincipal = kcToken.principal as KeycloakPrincipal<*>
         val username = kcPrincipal.keycloakSecurityContext.token.preferredUsername ?: return null
 
-        val account = accountService.findByUsername(username) ?:
+        val account = accountRepository.findByUsername(username) ?:
                 throw UsernameNotFoundException("Could not find account with username $username")
 
         return KeycloakAccountAuthenticationToken(account, kcToken.account, kcToken.authorities)

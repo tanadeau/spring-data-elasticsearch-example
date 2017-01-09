@@ -10,11 +10,13 @@ interface StompLiveEventsService {
 }
 
 @Service
-class StompLiveEventsServiceImpl(private val messagingTemplate: MessageSendingOperations<String>) : StompLiveEventsService {
+class StompLiveEventsServiceImpl(
+        private val messagingTemplate: MessageSendingOperations<String>) : StompLiveEventsService {
     override fun save(authorizable: Authorizable) {
         messagingTemplate.convertAndSend("/topic/activity", authorizable, { msg ->
-            MessageBuilder.fromMessage(msg).setHeader(Authorizable::visibilities.name, authorizable.visibilities).build()
+            MessageBuilder.fromMessage(msg)
+                    .setHeader(Authorizable::visibilities.name, authorizable.visibilities)
+                    .build()
         })
     }
-
 }
