@@ -215,7 +215,13 @@ class WebSocketConfig : AbstractWebSocketMessageBrokerConfigurer() {
     companion object : KLogging()
 
     override fun configureMessageBroker(config: MessageBrokerRegistry) {
-        //config.enableStompBrokerRelay("/topic").setRelayHost("host").setRelayPort(1000).setSystemHeartbeatReceiveInterval(12)
+        // Uncomment below lines to use a real broker
+        // config
+        //         .enableStompBrokerRelay("/topic")
+        //         .setRelayHost("host")
+        //         .setRelayPort(1000)
+        //         .setSystemHeartbeatReceiveInterval(12)
+
         config.enableSimpleBroker("/topic/activity")
         config.setApplicationDestinationPrefixes("/gbsp")
     }
@@ -226,7 +232,8 @@ class WebSocketConfig : AbstractWebSocketMessageBrokerConfigurer() {
 }
 
 @Configuration
-class WebSocketSecurityConfig(private val accountRepository: AccountRepository) : AbstractSecurityWebSocketMessageBrokerConfigurer() {
+class WebSocketSecurityConfig(private val accountRepository: AccountRepository) :
+        AbstractSecurityWebSocketMessageBrokerConfigurer() {
     companion object : KLogging()
 
     override fun configureInbound(messages: MessageSecurityMetadataSourceRegistry) {
