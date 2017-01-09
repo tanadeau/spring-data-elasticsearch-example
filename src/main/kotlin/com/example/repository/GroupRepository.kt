@@ -14,10 +14,7 @@ import org.springframework.stereotype.Component
 
 interface GroupRepository : ElasticsearchRepository<Group, String>, GroupRepositoryCustom
 
-interface GroupRepositoryCustom {
-    fun findAllUsingAuths(userAccount: Account, paging: Pageable): Page<Group>
-    fun findByIdUsingAuths(id: String, userAccount: Account): Group?
-}
+interface GroupRepositoryCustom : CustomRepository<Group>
 
 @Component
 class GroupRepositoryImpl(private val elasticsearchTemplate: ElasticsearchTemplate) : GroupRepositoryCustom {

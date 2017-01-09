@@ -14,9 +14,7 @@ interface AccountRepository : ElasticsearchRepository<Account, String>, AccountR
     fun findByUsername(username: String): Account?
 }
 
-interface AccountRepositoryCustom {
-    fun findAllUsingAuths(userAccount: Account, paging: Pageable): Page<Account>
-    fun findByIdUsingAuths(id: String, userAccount: Account): Account?
+interface AccountRepositoryCustom : CustomRepository<Account> {
     fun findByUsernameUsingAuths(username: String, userAccount: Account): Account?
 }
 
